@@ -5,16 +5,16 @@ struct OpponentSensorConfig {
   bool useOpponentSensors = true;
   bool processOpponentSensors = true;
   bool useSensor1 = true;
-  bool useSensor2 = false;
-  bool useSensor3 = false;
-  bool useSensor4 = false;
-  bool useSensor5 = false;
-  bool useSensor6 = false;
-  bool useSensor7 = false;
-  bool useSensor8 = false;
-  bool useSensor9 = false;
-  bool useSensor10 = false;
-  bool useSensor11 = false;
+  bool useSensor2 = true;
+  bool useSensor3 = true;
+  bool useSensor4 = true;
+  bool useSensor5 = true;
+  bool useSensor6 = true;
+  bool useSensor7 = true;
+  bool useSensor8 = true;
+  bool useSensor9 = true;
+  bool useSensor10 = true;
+  bool useSensor11 = true;
 };
 
 struct LineSensorConfig {

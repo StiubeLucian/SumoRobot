@@ -5,110 +5,132 @@
 extern RotaryEncoderHandler encoderHandler;
 
 void setupOpponentSensorsMenu(SensorConfig& sensorConfig) {
-    size_t currentOption = 0;
-    size_t scrollOffset = 0;
-    const size_t maxVisibleItems = 8;
+  size_t currentOption = 0;
+  size_t scrollOffset = 0;
+  const size_t maxVisibleItems = 8;
 
-    while (true) {
-        display.clearDisplay();
-        display.setCursor(0, 0);
-        display.println("Opponent Sensors:");
+  // Explicitly list sensor fields
+  bool* sensors[] = {
+    &sensorConfig.opponentSensorConfig.useSensor1,
+    &sensorConfig.opponentSensorConfig.useSensor2,
+    &sensorConfig.opponentSensorConfig.useSensor3,
+    &sensorConfig.opponentSensorConfig.useSensor4,
+    &sensorConfig.opponentSensorConfig.useSensor5,
+    &sensorConfig.opponentSensorConfig.useSensor6,
+    &sensorConfig.opponentSensorConfig.useSensor7,
+    &sensorConfig.opponentSensorConfig.useSensor8,
+    &sensorConfig.opponentSensorConfig.useSensor9,
+    &sensorConfig.opponentSensorConfig.useSensor10,
+    &sensorConfig.opponentSensorConfig.useSensor11
+  };
 
-        for (size_t i = 0; i < maxVisibleItems; i++) {
-            size_t sensorIndex = scrollOffset + i;
-            if (sensorIndex >= 11) break;
+  while (true) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Opponent Sensors:");
 
-            display.setCursor(0, 10 + (i * 8));
-            if (sensorIndex == currentOption) display.print("> ");
-            else display.print("  ");
-            display.print("Sensor ");
-            display.print(sensorIndex + 1);
-            display.print(": ");
-            display.print(((&sensorConfig.opponentSensorConfig.useSensor1)[sensorIndex]) ? "ON" : "OFF");
-        }
+    // Render sensor options
+    for (size_t i = 0; i < maxVisibleItems; i++) {
+      size_t sensorIndex = scrollOffset + i;
+      if (sensorIndex >= 11) break;
 
-        display.display();
-
-        // Update encoder
-        encoderHandler.update();
-        int rotation = encoderHandler.getRotation();
-
-        if (rotation > 0) {
-            if (currentOption < 10) currentOption++;
-            if (currentOption >= scrollOffset + maxVisibleItems) {
-                scrollOffset++;
-            }
-        } else if (rotation < 0) {
-            if (currentOption > 0) currentOption--;
-            if (currentOption < scrollOffset) {
-                scrollOffset--;
-            }
-        }
-
-        if (encoderHandler.isButtonPressed()) {
-            encoderHandler.resetButtonState();
-            bool& selectedSensor = (&sensorConfig.opponentSensorConfig.useSensor1)[currentOption];
-            selectedSensor = !selectedSensor;
-        }
-
-        if (digitalRead(cleanButtonPin) == LOW) {
-            delay(250);
-            break;
-        }
+      display.setCursor(0, 10 + (i * 8));
+      if (sensorIndex == currentOption) display.print("> ");
+      else display.print("  ");
+      display.print("Sensor ");
+      display.print(sensorIndex + 1);
+      display.print(": ");
+      display.print((*sensors[sensorIndex]) ? "ON" : "OFF");
     }
+
+    display.display();
+
+    // Update rotary encoder
+    encoderHandler.update();
+    int rotation = encoderHandler.getRotation();
+
+    // Navigate options
+    if (rotation > 0) {
+      if (currentOption < 10) currentOption++;
+      if (currentOption >= scrollOffset + maxVisibleItems) scrollOffset++;
+    } else if (rotation < 0) {
+      if (currentOption > 0) currentOption--;
+      if (currentOption < scrollOffset) scrollOffset--;
+    }
+
+    // Toggle sensor state on button press
+    if (encoderHandler.isButtonPressed()) {
+      encoderHandler.resetButtonState();
+
+      // Toggle the selected sensor
+      *sensors[currentOption] = !(*sensors[currentOption]);
+
+      // Debugging output
+      Serial.print("Sensor ");
+      Serial.print(currentOption + 1);
+      Serial.print(" toggled to ");
+      Serial.println((*sensors[currentOption]) ? "ON" : "OFF");
+    }
+
+    // Exit menu on back button press
+    if (digitalRead(cleanButtonPin) == LOW) {
+      delay(250); // Debounce
+      break;
+    }
+  }
 }
 
+
 void setupLineSensorsMenu(SensorConfig& sensorConfig) {
-    size_t currentOption = 0;
+  size_t currentOption = 0;
 
-    while (true) {
-        display.clearDisplay();
-        display.setCursor(0, 0);
-        display.println("Line Sensors:");
+  while (true) {
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.println("Line Sensors:");
 
-        const char* lineSensorNames[] = {"Front Left", "Front Right", "Back Left", "Back Right"};
-        for (size_t i = 0; i < 4; i++) {
-            display.setCursor(0, 10 + (i * 8));
-            if (i == currentOption) display.print("> ");
-            else display.print("  ");
-            display.print(lineSensorNames[i]);
-            display.print(": ");
-            display.print(((&sensorConfig.lineSensorConfig.useFrontLeft)[i]) ? "ON" : "OFF");
-        }
-
-        display.display();
-
-        // Update encoder
-        encoderHandler.update();
-        int rotation = encoderHandler.getRotation();
-
-        if (rotation != 0) {
-            currentOption = (currentOption + rotation + 4) % 4;
-        }
-
-        if (encoderHandler.isButtonPressed()) {
-            encoderHandler.resetButtonState();
-            bool& selectedSensor = (&sensorConfig.lineSensorConfig.useFrontLeft)[currentOption];
-            selectedSensor = !selectedSensor;
-        }
-
-        if (digitalRead(cleanButtonPin) == LOW) {
-            delay(250);
-            break;
-        }
+    const char* lineSensorNames[] = {"Front Left", "Front Right", "Back Left", "Back Right"};
+    for (size_t i = 0; i < 4; i++) {
+      display.setCursor(0, 10 + (i * 8));
+      if (i == currentOption) display.print("> ");
+      else display.print("  ");
+      display.print(lineSensorNames[i]);
+      display.print(": ");
+      display.print(((&sensorConfig.lineSensorConfig.useFrontLeft)[i]) ? "ON" : "OFF");
     }
+
+    display.display();
+
+    encoderHandler.update();
+    int rotation = encoderHandler.getRotation();
+
+    if (rotation != 0) {
+      currentOption = (currentOption + rotation + 4) % 4;
+    }
+
+    if (encoderHandler.isButtonPressed()) {
+      encoderHandler.resetButtonState();
+      bool& selectedSensor = (&sensorConfig.lineSensorConfig.useFrontLeft)[currentOption];
+      selectedSensor = !selectedSensor;
+    }
+
+    if (digitalRead(cleanButtonPin) == LOW) {
+      delay(250);
+      break;
+    }
+  }
 }
 
 void setupSensorsMenu(MenuSystem& menuSystem, SensorConfig& sensorConfig) {
-    menuSystem.addMenuItem(MenuItem(
-        "Sensors",
-        nullptr,
-        {
-            MenuItem("Opponent Sensors", [&]() {
-                setupOpponentSensorsMenu(sensorConfig);
-            }),
-            MenuItem("Line Sensors", [&]() {
-                setupLineSensorsMenu(sensorConfig);
-            })
-        }));
+  menuSystem.addMenuItem(MenuItem(
+                           "Sensors",
+                           nullptr,
+  {
+    MenuItem("Opponent Sensors", [&]() {
+      setupOpponentSensorsMenu(sensorConfig);
+    }),
+    MenuItem("Line Sensors", [&]() {
+      setupLineSensorsMenu(sensorConfig);
+    })
+  }));
 }
