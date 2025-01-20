@@ -4,9 +4,8 @@
 #include <EEPROM.h>
 #include "sensor_config.h" // Include the SensorConfig definition
 
-// EEPROM Addresses
 #define EEPROM_SEARCH_SPEED_ADDR 0
-#define EEPROM_ATTACK_SPEED_ADDR 1
+#define EEPROM_ATTACK_SPEED_ADDR (EEPROM_SEARCH_SPEED_ADDR + sizeof(int))
 #define EEPROM_SENSOR_CONFIG_ADDR 10 // Starting address for sensor configurations
 
 // Function Declarations

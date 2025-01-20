@@ -16,8 +16,8 @@ MenuSystem menuSystem(encoderHandler, cleanButtonPin, 200);
 
 SensorConfig sensorConfig; // Global SensorConfig
 
-//int searchSpeed ; // Default value
-//int attackSpeed; // Default value
+int searchSpeed ; // Default value
+int attackSpeed; // Default value
 
 void setup() {
   Serial.begin(115200);
